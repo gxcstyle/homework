@@ -1,0 +1,166 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>游戏界面</title>
+</head>
+<body>
+	请输入玩家人数：<input type="text" id="number" name="number" value="5"/><input type="button" id="ok" value="确定">&nbsp;<input type="button" id="newS" value="重新开始"/>
+	<div>
+		<table id="player_num" width="100%" colspan="0">
+	    </table>
+	</div>
+    
+    <h3><span>黄金点：</span><span id="qingkong"></span></h3>
+    <h3>玩家得分的结果</h3>
+    <span id="showScore"></span>
+    
+    <h3>结果记录：</h3>
+    <table id="Gold_board">
+    </table>
+    
+
+    
+</body>
+<script src="js/jquery-1.8.3.js"></script>
+<script>
+//动态生成表格
+	$(document).ready(function()
+	{
+		$("#ok").click(function()
+		{
+				$("#player_num").empty();
+				var number =$("#number").val();
+				if(number!=0&&number!=null&&number!='')
+				{
+					for(var i=0;i<number;i++)
+					{
+						$("#player_num").append("<tr><td class='player'>玩家"+(i+1)+"<input type='text' name='number'></td></tr>");
+					}
+					$("#player_num").append("<tr><td><input id='begin' type='button' value='游戏开始' onclick='getValue(this)'>&nbsp;&nbsp;");
+				}
+				else
+				{
+					alert("请重新玩家数！！");
+				}
+		});
+	});
+	
+</script> 
+<script>
+	var THE_GOLD=0;//用来保存黄金分割点
+	var LIST = new Array();//用于接受每次输入的数据
+	var MaxIndex=0;//保存最大值的小标
+	var MinIndex=0;//保存最小值的下标
+	var listEnd = new Array();//用户的每次得分
+	var Min=1000000;			//最近的距离
+	var NUM=1;					//用于统计次数
+	//通过点击开始获得黄金点
+	function getValue(obj)
+	{
+		$($(obj).parent().parent().parent()).find("td").each(function(index,element)//element表示td标签
+		{
+			if((index)<$("#number").val())
+			{
+				var num =$(element).find("input").val();//获取每一个
+				LIST.push(num);//每一个输入的数据
+			}
+		});
+		var sum=0;
+		$(LIST).each(function(index,value)
+		{
+			sum+=parseFloat(value);//获取所有数据的总值
+		});
+		var Gold =(sum/LIST.length)*0.618;//获取黄金的分割点
+		THE_GOLD= Gold;	//获取黄金点
+		$("#qingkong").empty();
+		$("#qingkong").append(THE_GOLD);
+		get_End();		//得出最后的评分
+		scoreBoard();	//输出输出的分数
+		showRecord()	//显示玩家结果
+		LIST.length=0;	//将保存数据的数组清零
+	}
+</script>
+<script>
+	//求得最后的评分
+	var Max=0;
+	function get_End()
+	{
+		$(LIST).each(function(index,value){
+				var num =Math.abs(value-THE_GOLD);//各各点距金点的距离，一下的代码用于求出距金点的最大值，最小值
+				if(num>Max)
+				{
+					Max = num;
+					MaxIndex= index;//最少得分
+				}
+				if(num<Min)
+				{
+					Min = num;
+					MinIndex=index;//最大得分
+				}
+		});
+	}
+</script>
+<script>
+	//获得结果得分板
+	function scoreBoard()
+	{
+		if(listEnd.length==0)
+		{
+			for(var i=0;i<$("#number").val();i++)
+			{
+				listEnd[i]=0;
+			}
+		}
+		for(var i =0;i<$("#number").val();i++)
+		{	
+			if(i==MaxIndex)
+			{
+				var low =-2.0;
+				listEnd[i]=parseFloat(low)+parseFloat(listEnd[i]);		
+			}
+			else if(i==MinIndex)
+			{
+				var height =Min.toFixed(2);
+				listEnd[i]=parseFloat(height)+parseFloat(listEnd[i]);
+			}
+			else
+			{
+				listEnd[i]=0+parseFloat(listEnd[i]);
+			}
+		}
+		var body="";
+		$("#showScore").empty();
+		for(var i=0;i<$("#number").val();i++)
+		{
+			body +=" 玩家"+(i+1)+"："+listEnd[i];
+		}
+
+		$("#showScore").append(body);
+	} 
+</script>
+<script>
+<!-- 将每次的用户输入结果显示出来 -->
+	function showRecord()
+	{
+		var body ="";
+		for(var i=0;i<LIST.length;i++)
+		{
+			body+="玩家"+(i+1)+"："+LIST[i]+"&nbsp;"
+		}
+		$("#Gold_board").append("<tr><td>"+"第"+(NUM++)+"次："+body+"</td></tr>");
+	}
+</script>
+<script>
+	$("#newS").click(function(){
+		LIST.length=0;
+		listEnd.length=0;
+		THE_GOLD = 0;
+		MaxIndex=0;
+		MinIndex=0;
+		Min=0;
+		NUM=0;
+		location.reload();	
+	});
+</script>
+</html>
